@@ -1,8 +1,9 @@
-from flask import Flask,render_template,request,redirect
+from flask import Flask,render_template,request,redirect,make_response
 from models import db,PersonModel
 from flask_language import Language, current_language
 from flask import jsonify
-import datetime
+from simplexml import dumps
+from flask_restful import Api, Resource
 
 app = Flask(__name__)
 lang = Language()
@@ -15,6 +16,16 @@ app.config['LANGUAGE_COOKIE_NAME'] = 'lang_server'
 db.init_app(app)
 lang.init_app(app)
 
+def output_xml(data,code,headers=None):
+    """Makes a Flask response with a XML encoded body"""
+    resp = make_response(dumps({'response': data}), code)
+    resp.headers.extend(headers or {})
+    return resp
+
+api = Api(app,default_mediatype='application/xml')
+api.representations['application/xml']=output_xml
+@api.representation('application/xml')
+
 @app.before_first_request
 def create_table():
     db.create_all()
@@ -23,7 +34,7 @@ def create_table():
 def index():
     return render_template('index.html')
 
-@app.route('/data/create' , methods = ['GET','POST'])
+@app.route('/data/create', methods=['GET','POST'])
 def create():
     if request.method == 'GET':
         return render_template('createpage.html')
@@ -41,21 +52,24 @@ def create():
         return redirect('/data')
 
  
-@app.route('/data')
+@app.route('/data', methods=['GET'])
 def RetrieveList():
-    people = PersonModel.query.all()
-    return render_template('datalist.html',people=people)
+    #people = PersonModel.query.all()
+    #return render_template('datalist.html',people=people)
+    people = [person.json() for person in PersonModel.query.all()]
+    return jsonify({'people': people})
 
  
-@app.route('/data/<int:id>')
+@app.route('/data/<int:id>', methods=['GET'])
 def Retrieveperson(id):
     person = PersonModel.query.filter_by(id=id).first()
     if person:
-        return render_template('data.html', person=person)
+        #return render_template('data.html', person=person)
+        return jsonify({'person': person.json()})
     return f"person with ID = {id} Doesnt exist"
 
 
-@app.route('/data/<int:id>/update',methods = ['GET','POST'])
+@app.route('/data/<int:id>/update', methods=['GET','POST'])
 def update(id):
     person = PersonModel.query.filter_by(id=id).first()
     if request.method == 'POST':
@@ -112,4 +126,15 @@ def set_language():
         'language': str(current_language),
     })
 
-app.run(debug=True, host='localhost', port=5000)
+class call(Resource):
+    
+    def get(self):
+        people = [person.json() for person in PersonModel.query.all()]
+        return {'people': people}
+    #def get(self, entry):
+    #    return {'hello': entry}
+
+api.add_resource(call,'/api')
+
+if __name__=='__main__':
+    app.run(debug=True, host='localhost', port=5000)
