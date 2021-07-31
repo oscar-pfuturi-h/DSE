@@ -1,5 +1,5 @@
 from flask import Flask,render_template,request,redirect
-from models import db,EmployeeModel
+from models import db,PersonModel
 from flask_language import Language, current_language
 from flask import jsonify
 import datetime
