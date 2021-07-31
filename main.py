@@ -32,58 +32,62 @@ def create():
         return render_template('createpage.html')
 
     if request.method == 'POST':
-        employee_id = request.form['employee_id']
-        name = request.form['name']
+        dni = request.form['dni']
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
         age = request.form['age']
-        position = request.form['position']
-        employee = EmployeeModel(employee_id=employee_id, name=name, age=age, position = position)
-        db.session.add(employee)
+        cellphone = request.form['cellphone']
+        address = request.form['address']
+        person = PersonModel(dni=dni, first_name=first_name, last_name=last_name, age=age, cellphone=cellphone, address=address)
+        db.session.add(person)
         db.session.commit()
         return redirect('/data')
 
  
 @app.route('/data')
 def RetrieveList():
-    employees = EmployeeModel.query.all()
-    return render_template('datalist.html',employees = employees)
+    people = PersonModel.query.all()
+    return render_template('datalist.html',people=people)
 
  
 @app.route('/data/<int:id>')
-def RetrieveEmployee(id):
-    employee = EmployeeModel.query.filter_by(employee_id=id).first()
-    if employee:
-        return render_template('data.html', employee = employee)
-    return f"Employee with id ={id} Doesnt exist"
+def Retrieveperson(id):
+    person = PersonModel.query.filter_by(dni=id).first()
+    if person:
+        return render_template('data.html', person=person)
+    return f"person with DNI = {id} Doesnt exist"
 
 
 @app.route('/data/<int:id>/update',methods = ['GET','POST'])
 def update(id):
-    employee = EmployeeModel.query.filter_by(employee_id=id).first()
+    person = PersonModel.query.filter_by(id=id).first()
     if request.method == 'POST':
-        if employee:
-            db.session.delete(employee)
+        if person:
+            db.session.delete(person)
             db.session.commit()
-            name = request.form['name']
+            dni = request.form['dni']
+            first_name = request.form['first_name']
+            last_name = request.form['last_name']
             age = request.form['age']
-            position = request.form['position']
-            employee = EmployeeModel(employee_id=id, name=name, age=age, position = position)
-            db.session.add(employee)
+            cellphone = request.form['cellphone']
+            address = request.form['address']
+            person = PersonModel(dni=dni, first_name=first_name, last_name=last_name, age=age, cellphone=cellphone, address=address)
+            db.session.add(person)
             db.session.commit()
             return redirect(f'/data/{id}')
-        return f"Employee with id = {id} Does not exist"
+        return f"person with ID = {id} Does not exist"
  
-    return render_template('update.html', employee = employee)
+    return render_template('update.html', person=person)
 
 
 @app.route('/data/<int:id>/delete', methods=['GET','POST'])
 def delete(id):
-    employee = EmployeeModel.query.filter_by(employee_id=id).first()
+    person = PersonModel.query.filter_by(id=id).first()
     if request.method == 'POST':
-        if employee:
-            db.session.delete(employee)
+        if person:
+            db.session.delete(person)
             db.session.commit()
             return redirect('/data')
-
 
     return render_template('delete.html')
 
