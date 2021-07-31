@@ -1,0 +1,6 @@
+{% for person in people %}
+<h3 style="display: inline;">{{person}}</h3>
+<button><a href="/data/{{person.id}}">See Ô</a></button>
+<hr>
+{% endfor %}
+<button><a href="/">Back</a></button>

@@ -7,16 +7,13 @@ import datetime
 app = Flask(__name__)
 lang = Language()
 
-
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 
 app.config['LANGUAGE_COOKIE_TIMEOUT'] = 2
 app.config['LANGUAGE_COOKIE_NAME'] = 'lang_server'
 db.init_app(app)
 lang.init_app(app)
-
 
 @app.before_first_request
 def create_table():
@@ -52,10 +49,10 @@ def RetrieveList():
  
 @app.route('/data/<int:id>')
 def Retrieveperson(id):
-    person = PersonModel.query.filter_by(dni=id).first()
+    person = PersonModel.query.filter_by(id=id).first()
     if person:
         return render_template('data.html', person=person)
-    return f"person with DNI = {id} Doesnt exist"
+    return f"person with ID = {id} Doesnt exist"
 
 
 @app.route('/data/<int:id>/update',methods = ['GET','POST'])
@@ -74,8 +71,8 @@ def update(id):
             person = PersonModel(dni=dni, first_name=first_name, last_name=last_name, age=age, cellphone=cellphone, address=address)
             db.session.add(person)
             db.session.commit()
-            return redirect(f'/data/{id}')
-        return f"person with ID = {id} Does not exist"
+            return redirect(f'/data/{person.id}')
+        return f"person with ID = {person.id} Does not exist"
  
     return render_template('update.html', person=person)
 
@@ -90,7 +87,6 @@ def delete(id):
             return redirect('/data')
 
     return render_template('delete.html')
-
 
 @lang.allowed_languages
 def get_allowed_languages():
