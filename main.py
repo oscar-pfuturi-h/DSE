@@ -11,6 +11,10 @@ db.init_app(app)
 def create_table():
     db.create_all()
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/data/create' , methods = ['GET','POST'])
 def create():
     if request.method == 'GET':
@@ -72,4 +76,4 @@ def delete(id):
 
     return render_template('delete.html')
 
-app.run(host='localhost', port=5000)
+app.run(debug=True, host='localhost', port=5000)
