@@ -1,11 +1,22 @@
 from flask import Flask,render_template,request,redirect
 from models import db,EmployeeModel
+from flask_language import Language, current_language
+from flask import jsonify
+import datetime
 
 app = Flask(__name__)
+lang = Language()
+
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+
+app.config['LANGUAGE_COOKIE_TIMEOUT'] = 2
+app.config['LANGUAGE_COOKIE_NAME'] = 'lang_server'
 db.init_app(app)
+lang.init_app(app)
+
 
 @app.before_first_request
 def create_table():
@@ -75,5 +86,30 @@ def delete(id):
 
 
     return render_template('delete.html')
+
+
+@lang.allowed_languages
+def get_allowed_languages():
+    return ['en', 'es']
+
+@lang.default_language
+def get_default_language():
+    return 'es'
+
+@app.route('/api/language')
+def get_language():
+    return jsonify({
+        'language': str(current_language),
+    })
+
+@app.route('/api/language', methods=['POST'])
+def set_language():
+    req = request.get_json()
+    language = req.get('language', None)
+
+    lang.change_language(language)
+    return jsonify({
+        'language': str(current_language),
+    })
 
 app.run(debug=True, host='localhost', port=5000)
